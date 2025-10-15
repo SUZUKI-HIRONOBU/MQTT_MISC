@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Speech to Text Demo with MQTT</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+      .s2t {
+        background-color: rgb(200, 245, 200);
+        padding: 10px;
+        border: 1px solid #000;
+        margin: 15px;
+      }
+      h1 {
+        font-size: large;
+        color: #364e96;
+        border: solid 3px #364e96;
+        padding: 0.5em;
+        border-radius: 0.5em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Speech to Text with MQTT</h1>
+    <div id="message_field"></div>
+    <script>
+      let msg = document.getElementById("message_field");
+      let client = mqtt.connect("wss://broker.emqx.io:8084/mqtt");
+      let topic = "mosqm/YOURTOPICAh7aesai";
+
+      client.on("connect", function () {
+        console.log("Connected to MQTT broker");
+        client.subscribe(topic);
+      });
+
+      client.on("message", function (topic, message) {
+        let mqtt_message = message.toString();
+        console.log(">" + mqtt_message + "<");
+        if (mqtt_message.length > 0) {
+            //msg.innerHTML += '<div class="s2t">' + mqtt_message + '</div>';
+	    const newItem = document.createElement('div');
+	    newItem.className='s2t';
+	    newItem.textContent = mqtt_message;
+            msg.prepend(newItem);
+        }
+      });
+
+      client.on("error", function (error) {
+        console.error("MQTT Error:", error);
+        msg.innerHTML += '<div class="s2t">Error occurred: ' + error.message + '</div>';
+      });
+
+      setTimeout(function () {
+        client.end();
+        msg.innerHTML +=
+          '<div class="s2t">Speech to Text with MQTT demo was finished. Thank you!</div>';
+      }, 1800000); // stop after 30 min
+    </script>
+  </body>
+</html>
